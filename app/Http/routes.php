@@ -28,6 +28,14 @@ Route::group(['middleware' => ['web']], function () {
         return view('welcome');
     })->middleware('guest');
 
+    Route::get('/home', function(){
+    	return view('home');
+    });
+
+    Route::get('/admin', 'AdminController@index');
+    Route::get('/addnew', function(){
+        return view('addnewuser');
+    });
     Route::get('/tasks', 'TaskController@index');
     Route::post('/task', 'TaskController@store');
     Route::delete('/task/{task}', 'TaskController@destroy');

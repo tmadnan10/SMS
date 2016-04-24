@@ -13,7 +13,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'account_type',
+        'username', 'password', 'account_type',
     ];
 
     /**
@@ -31,5 +31,29 @@ class User extends Authenticatable
     public function tasks()
     {
         return $this->hasMany(Task::class);
+    }
+
+    /**
+     * Get the teacher row for the user.
+     */
+
+    public function teacher()
+    {
+        return $this->hasOne(Teacher::class);
+    }
+
+    public function getID()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Get the account type for the user.
+     * This Type will be used to redirect the from the log in page
+     */
+
+    public function getType()
+    {
+        return $this->account_type;
     }
 }

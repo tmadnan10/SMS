@@ -28,7 +28,8 @@ class AuthController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/tasks';
+    protected $redirectTo = '/';
+    protected $username = 'username';
 
     /**
      * Create a new authentication controller instance.
@@ -49,8 +50,7 @@ class AuthController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users',
+            'username' => 'required|max:255|unique:users',
             'password' => 'required|confirmed|min:6',
             'account_type' => 'required',
         ]);
@@ -65,10 +65,41 @@ class AuthController extends Controller
     protected function create(array $data)
     {
         return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
+            'username' => $data['username'],
             'password' => bcrypt($data['password']),
             'account_type' => $data['account_type'],
         ]);
     }
+    public function postLogin(Request $request)
+{
+    // get our login input
+    $login = $request->input('login');
+    // check login field
+    $login_type = filter_var( $login, FILTER_VALIDATE_EMAIL ) ? 'email' : 'username';
+    // merge our login field into the request with either email or username as key
+    $request->merge([ $login_type => $login ]);
+    // let's validate and set our credentials
+    if ( $login_type == 'email' ) {
+        $this->validate($request, [
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
+        $credentials = $request->only( 'email', 'password' );
+    } else {
+        $this->validate($request, [
+            'username' => 'required',
+            'password' => 'required',
+        ]);
+        $credentials = $request->only( 'username', 'password' );
+    }
+    if ($this->auth->attempt($credentials, $request->has('remember')))
+    {
+        return redirect()->intended($this->redirectPath());
+    }
+    return redirect($this->loginPath())
+        ->withInput($request->only('login', 'remember'))
+        ->withErrors([
+            'login' => $this->getFailedLoginMessage(),
+        ]);
+}
 }
